@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Advanced Weather App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <h1>🌤 Weather</h1>
+    <div class="header-buttons">
+      <button id="toggleTheme">🌙</button>
+      <button onclick="refreshWeather()">🔄</button>
+      <button onclick="toggleUnit()">🌡</button>
+    </div>
+  </header>
+
+  <div class="search-box">
+    <input type="text" id="cityInput" placeholder="Search city">
+    <button onclick="searchCity()">Search</button>
+  </div>
+
+  <div class="action-buttons">
+    <button class="location-btn" onclick="useLocation()">📍 My Location</button>
+  </div>
+
+  <div id="timeBox" class="time-box"></div>
+  <div id="alertBox" class="alert-box"></div>
+
+  <div class="loader" id="loader"></div>
+
+  <div id="currentWeather"></div>
+  <div id="extraInfo" class="info-grid"></div>
+
+  <h3 class="section-title">🕒 Hourly Forecast</h3>
+  <div id="hourlyForecast" class="hourly"></div>
+
+  <canvas id="tempChart"></canvas>
+
+  <h3 class="section-title">📅 5-Day Forecast</h3>
+  <div id="forecast"></div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
