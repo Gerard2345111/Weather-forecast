@@ -1,4 +1,4 @@
-const apiKey = "YOUR_API_KEY_HERE";
+const apiKey = "085fa26c05d59d28da9e0131a6c35c3c";
 let unit = "metric";
 let lastCity = "";
 let chart;
