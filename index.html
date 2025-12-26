@@ -6,19 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
 
 <div class="app">
-
-  <!-- HEADER -->
   <header>
-    <div class="header-left" onclick="openProfile()">
-      <img id="profilePic" class="profile-pic"
-        src="https://i.imgur.com/8Km9tLL.png">
-      <span id="username">Gerard</span>
-    </div>
-
+    <h1>🌤 Weather</h1>
     <div class="header-buttons">
       <button id="toggleTheme">🌙</button>
       <button onclick="refreshWeather()">🔄</button>
@@ -26,18 +18,18 @@
     </div>
   </header>
 
-  <input type="file" id="uploadPic" accept="image/*" hidden>
-
-  <!-- SEARCH -->
   <div class="search-box">
     <input type="text" id="cityInput" placeholder="Search city">
     <button onclick="searchCity()">Search</button>
   </div>
 
-  <button class="location-btn" onclick="useLocation()">📍 My Location</button>
+  <div class="action-buttons">
+    <button class="location-btn" onclick="useLocation()">📍 My Location</button>
+  </div>
 
   <div id="timeBox" class="time-box"></div>
   <div id="alertBox" class="alert-box"></div>
+
   <div class="loader" id="loader"></div>
 
   <div id="currentWeather"></div>
@@ -52,9 +44,9 @@
   <div id="forecast"></div>
 </div>
 
-<!-- ================== STYLE ================== -->
+</body>
 <style>
-* {
+  * {
   box-sizing: border-box;
   font-family: "Segoe UI", sans-serif;
 }
@@ -66,6 +58,7 @@ body {
   justify-content: center;
   align-items: center;
   background: linear-gradient(to right,#4facfe,#00f2fe);
+  transition: 0.4s;
 }
 
 body.dark {
@@ -80,32 +73,13 @@ body.dark {
   border-radius: 20px;
   background: rgba(255,255,255,0.25);
   backdrop-filter: blur(15px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
 }
 
-/* HEADER */
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
-.profile-pic {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid white;
-}
-
-#username {
-  font-weight: bold;
 }
 
 .header-buttons button {
@@ -117,6 +91,11 @@ button {
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: scale(1.05);
 }
 
 .search-box {
@@ -132,16 +111,20 @@ button {
   border: none;
 }
 
+.action-buttons {
+  margin-bottom: 10px;
+}
+
 .location-btn {
   width: 100%;
   background: #0ea5e9;
   color: white;
-  margin-bottom: 10px;
 }
 
 .time-box {
   text-align: center;
   font-size: 14px;
+  margin-bottom: 8px;
 }
 
 .alert-box {
@@ -150,6 +133,7 @@ button {
   border-radius: 10px;
   font-size: 13px;
   text-align: center;
+  margin-bottom: 10px;
 }
 
 .alert-hot { background: #f97316; color: white; }
@@ -168,12 +152,14 @@ button {
   margin: 15px auto;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .weather-card {
   text-align: center;
+}
+
+.weather-card img {
+  width: 80px;
 }
 
 .temp {
@@ -185,13 +171,20 @@ button {
   display: grid;
   grid-template-columns: repeat(2,1fr);
   gap: 10px;
+  margin-top: 10px;
 }
 
 .info-grid div {
   background: rgba(255,255,255,0.35);
   padding: 10px;
   border-radius: 12px;
+  font-size: 13px;
   text-align: center;
+}
+
+.section-title {
+  margin-top: 20px;
+  font-size: 15px;
 }
 
 .hourly {
@@ -205,13 +198,27 @@ button {
   background: rgba(255,255,255,0.35);
   padding: 8px;
   border-radius: 12px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.forecast {
+  display: grid;
+  grid-template-columns: repeat(5,1fr);
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.forecast div {
+  background: rgba(255,255,255,0.35);
+  padding: 8px;
+  border-radius: 10px;
+  font-size: 12px;
   text-align: center;
 }
 </style>
-
-<!-- ================== SCRIPT ================== -->
 <script>
-const apiKey = "085fa26c05d59d28da9e0131a6c35c3c";
+  const apiKey = "085fa26c05d59d28da9e0131a6c35c3c";
 let unit = "metric";
 let lastCity = "";
 let chart;
@@ -222,42 +229,24 @@ const forecastDiv = document.getElementById("forecast");
 const hourlyDiv = document.getElementById("hourlyForecast");
 const alertBox = document.getElementById("alertBox");
 
-/* THEME */
-document.getElementById("toggleTheme").onclick =
-  () => document.body.classList.toggle("dark");
+document.getElementById("toggleTheme").onclick = () =>
+  document.body.classList.toggle("dark");
 
-/* TIME */
-setInterval(() => {
+function showLoader(v){ loader.style.display = v ? "block" : "none"; }
+
+function updateTime(){
   const now = new Date();
-  timeBox.innerHTML =
+  document.getElementById("timeBox").innerHTML =
     `<strong>${now.toLocaleTimeString()}</strong><br>${now.toDateString()}`;
-}, 1000);
-
-/* PROFILE PICTURE */
-const profilePic = document.getElementById("profilePic");
-const uploadPic = document.getElementById("uploadPic");
-
-const savedPic = localStorage.getItem("profilePic");
-if (savedPic) profilePic.src = savedPic;
-
-function openProfile() {
-  uploadPic.click();
 }
+setInterval(updateTime,1000);
+updateTime();
 
-uploadPic.onchange = () => {
-  const file = uploadPic.files[0];
-  const reader = new FileReader();
-  reader.onload = () => {
-    profilePic.src = reader.result;
-    localStorage.setItem("profilePic", reader.result);
-  };
-  reader.readAsDataURL(file);
-};
-
-/* WEATHER */
 function searchCity(){
-  lastCity = cityInput.value;
-  fetchWeather(lastCity);
+  const city = cityInput.value;
+  if(!city) return;
+  lastCity = city;
+  fetchWeather(city);
 }
 
 function refreshWeather(){
@@ -276,33 +265,114 @@ function useLocation(){
 }
 
 function fetchWeather(city){
-  loader.style.display="block";
+  showLoader(true);
   fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=${unit}&appid=${apiKey}`)
-    .then(r=>r.json())
-    .then(d=>{
-      loader.style.display="none";
-      displayCurrent(d);
-    });
+  .then(r=>r.json())
+  .then(d=>{
+    showLoader(false);
+    displayCurrent(d);
+    fetchForecast(city);
+    showAlert(d);
+  });
 }
 
 function fetchWeatherByCoords(lat,lon){
+  showLoader(true);
   fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=${unit}&appid=${apiKey}`)
-    .then(r=>r.json())
-    .then(d=>{
-      lastCity=d.name;
-      displayCurrent(d);
-    });
+  .then(r=>r.json())
+  .then(d=>{
+    showLoader(false);
+    lastCity=d.name;
+    displayCurrent(d);
+    fetchForecast(d.name);
+    showAlert(d);
+  });
+}
+
+function fetchForecast(city){
+  fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=${unit}&appid=${apiKey}`)
+  .then(r=>r.json())
+  .then(data=>{
+    hourlyDiv.innerHTML=data.list.slice(0,8).map(h=>`
+      <div>
+        ${new Date(h.dt_txt).getHours()}:00<br>
+        <img src="https://openweathermap.org/img/wn/${h.weather[0].icon}.png">
+        ${Math.round(h.main.temp)}°
+      </div>`).join("");
+
+    forecastDiv.innerHTML=`
+      <div class="forecast">
+        ${data.list.filter((_,i)=>i%8===0).slice(0,5).map(d=>`
+          <div>
+            ${new Date(d.dt_txt).toLocaleDateString("en",{weekday:"short"})}<br>
+            <img src="https://openweathermap.org/img/wn/${d.weather[0].icon}.png"><br>
+            ${Math.round(d.main.temp)}°
+          </div>`).join("")}
+      </div>`;
+
+    drawChart(data);
+  });
+}
+
+function drawChart(data){
+  const labels=data.list.slice(0,8).map(d=>new Date(d.dt_txt).getHours()+":00");
+  const temps=data.list.slice(0,8).map(d=>d.main.temp);
+
+  if(chart) chart.destroy();
+  chart=new Chart(tempChart,{
+    type:"line",
+    data:{labels,datasets:[{label:"Temp",data:temps,tension:0.4}]}
+  });
+}
+
+function weatherAdvice(cond,temp){
+  if(cond.includes("Rain")) return "🌧 Carry an umbrella";
+  if(cond.includes("Clear") && temp>30) return "☀ Stay hydrated";
+  if(temp<10) return "🧥 Wear warm clothes";
+  return "😊 Have a great day";
 }
 
 function displayCurrent(d){
-  currentWeather.innerHTML = `
+  const icon=d.weather[0].icon;
+  const sunrise=new Date(d.sys.sunrise*1000).toLocaleTimeString();
+  const sunset=new Date(d.sys.sunset*1000).toLocaleTimeString();
+
+  currentWeather.innerHTML=`
     <div class="weather-card">
       <h2>${d.name}</h2>
+      <img src="https://openweathermap.org/img/wn/${icon}@2x.png">
       <div class="temp">${Math.round(d.main.temp)}°</div>
-      <p>${d.weather[0].description}</p>
+      <p>${weatherAdvice(d.weather[0].main,d.main.temp)}</p>
     </div>`;
+
+  extraInfo.innerHTML=`
+    <div>🌡 Feels Like<br>${Math.round(d.main.feels_like)}°</div>
+    <div>💧 Humidity<br>${d.main.humidity}%</div>
+    <div>💨 Wind<br>${d.wind.speed}</div>
+    <div>🌅 Sunrise<br>${sunrise}</div>
+    <div>🌇 Sunset<br>${sunset}</div>
+    <div>🧭 Pressure<br>${d.main.pressure}</div>`;
+}
+
+function showAlert(d){
+  alertBox.style.display="block";
+  alertBox.className="alert-box";
+
+  if(d.main.temp>=35){
+    alertBox.classList.add("alert-hot");
+    alertBox.innerHTML="🔥 Heat Alert";
+  }else if(d.weather[0].main.includes("Rain")){
+    alertBox.classList.add("alert-rain");
+    alertBox.innerHTML="🌧 Rain Alert";
+  }else if(d.weather[0].main.includes("Thunder")){
+    alertBox.classList.add("alert-storm");
+    alertBox.innerHTML="⛈ Storm Alert";
+  }else if(d.main.temp<=5){
+    alertBox.classList.add("alert-cold");
+    alertBox.innerHTML="❄ Cold Alert";
+  }else{
+    alertBox.style.display="none";
+  }
 }
 </script>
-
-</body>
 </html>
